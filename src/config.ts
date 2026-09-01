@@ -2,6 +2,9 @@ import { error } from "console";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { throwDeprecation } from "process";
+import { errorMonitor } from "stream";
+import { threadId } from "worker_threads";
 
 export type Config = {
     dbUrl: string;
@@ -59,15 +62,38 @@ export function setUser(userName: string): void {
 }
 
 type CommandHandler = (cmdName: string, ...args: string[]) => void;
+
 export function handlerLogin(cmdName: string, ...args: string[]) {
     if (!args) {
         throw new Error(
             " the login handler expects a single argument, the username.",
         );
     }
-
-    setUser(args[0]);
-    console.log("the use has been set");
+    const userName = args[0];
+    if (!userName) {
+        throw new Error("a username is required.");
+    }
+    setUser(userName);
+    console.log(`User has been set to ${userName}`);
 }
 
-export type CommandsRegistry = {};
+export type CommandsRegistry = Record<string, CommandHandler>;
+
+export function registerCommand(
+    registry: CommandsRegistry,
+    cmdName: string,
+    handler: CommandHandler,
+) {
+    registry[cmdName] = handler;
+}
+export function runCommand(
+    registry: CommandsRegistry,
+    cmdName: string,
+    ...args: string[]
+) {
+    const handler = registry[cmdName];
+    if (!handler) {
+        throw new Error("No such command exist");
+    }
+    handler(cmdName, ...args);
+}
