@@ -48,22 +48,22 @@ export async function feedByURL(url: string) {
     return result;
 }
 
-export async function handlerfollow(cmd: string, url: string) {
+export async function handlerFollow(
+    cmdName: string,
+    user: User,
+    ...args: string[]
+) {
     try {
+        if (args.length !== 1) {
+            throw new Error(`usage: ${cmdName} <url>`);
+        }
+
+        const url = args[0];
+
         const feed = await feedByURL(url);
 
         if (!feed) {
             console.error(`Error: Could not find a feed with URL: ${url}`);
-            return;
-        }
-
-        const config = readConfig();
-        const user = await getUserByName(config.currentUserName as string);
-
-        if (!user) {
-            console.error(
-                `Error: Could not find user: ${config.currentUserName}. Have you logged in?`,
-            );
             return;
         }
 
@@ -75,10 +75,9 @@ export async function handlerfollow(cmd: string, url: string) {
             console.log(`feedName:${result[i].feedName}`);
         }
     } catch (err) {
-        console.log("Try again ");
+        console.log("Try again");
     }
 }
-
 export async function getFeedFollowsForUser(userName: string) {
     const user = await getUserByName(userName);
     const result = await db
@@ -96,15 +95,12 @@ export async function getFeedFollowsForUser(userName: string) {
     return result;
 }
 
-export async function handlerFollowing(_: string) {
-    const user = readConfig().currentUserName;
+export async function handlerFollowing(_: string, user: User) {
+    const followingFeeds = await getFeedFollowsForUser(user.name);
 
-    const userInfo = await getUserByName(user as string);
+    console.log(`${user.name} follows:`);
 
-    const follwingFeeds = await getFeedFollowsForUser(userInfo.name);
-
-    console.log(`${userInfo.name} follows:`);
-    for (let i = 0; i < follwingFeeds.length; i++) {
-        console.log(`${follwingFeeds[i].feedName}`);
+    for (let i = 0; i < followingFeeds.length; i++) {
+        console.log(`${followingFeeds[i].feedName}`);
     }
 }

@@ -12,11 +12,8 @@ import {
     handlerLogin,
     handlerRegister,
 } from "./commands/users";
-import {
-    createFeedFollow,
-    handlerfollow,
-    handlerFollowing,
-} from "./lib/db/queries/feed";
+import { handlerFollow, handlerFollowing } from "./lib/db/queries/feed";
+import { middlewareLoggedIn } from "./middleware";
 
 async function main() {
     const commandsRegistry: CommandsRegistry = {};
@@ -26,11 +23,26 @@ async function main() {
     registerCommand(commandsRegistry, "reset", handlerReset);
     registerCommand(commandsRegistry, "users", handlerListUsers);
     registerCommand(commandsRegistry, "agg", HandlerAgg);
-    registerCommand(commandsRegistry, "addfeed", handlerAddFeed);
-    registerCommand(commandsRegistry, "feeds", handlerGetFeed);
-    registerCommand(commandsRegistry, "follow", handlerfollow);
-    registerCommand(commandsRegistry, "following", handlerFollowing);
 
+    registerCommand(
+        commandsRegistry,
+        "addfeed",
+        middlewareLoggedIn(handlerAddFeed),
+    );
+
+    registerCommand(commandsRegistry, "feeds", handlerGetFeed);
+
+    registerCommand(
+        commandsRegistry,
+        "follow",
+        middlewareLoggedIn(handlerFollow),
+    );
+
+    registerCommand(
+        commandsRegistry,
+        "following",
+        middlewareLoggedIn(handlerFollowing),
+    );
     const args = process.argv.slice(2);
 
     if (args.length < 1) {
