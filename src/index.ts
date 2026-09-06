@@ -12,6 +12,11 @@ import {
     handlerLogin,
     handlerRegister,
 } from "./commands/users";
+import {
+    createFeedFollow,
+    handlerfollow,
+    handlerFollowing,
+} from "./lib/db/queries/feed";
 
 async function main() {
     const commandsRegistry: CommandsRegistry = {};
@@ -23,6 +28,8 @@ async function main() {
     registerCommand(commandsRegistry, "agg", HandlerAgg);
     registerCommand(commandsRegistry, "addfeed", handlerAddFeed);
     registerCommand(commandsRegistry, "feeds", handlerGetFeed);
+    registerCommand(commandsRegistry, "follow", handlerfollow);
+    registerCommand(commandsRegistry, "following", handlerFollowing);
 
     const args = process.argv.slice(2);
 
