@@ -14,7 +14,12 @@
     "description": "",
     "devDependencies": {
         "@types/node": "^26.3.0",
+        "drizzle-kit": "^0.31.10",
         "tsx": "^4.23.12",
         "typescript": "^7.0.2"
+    },
+    "dependencies": {
+        "drizzle-orm": "^0.45.2",
+        "fast-xml-parser": "^5.11.1"
     }
 }

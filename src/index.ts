@@ -1,19 +1,28 @@
+import { handlerAddFeed } from "./commands/addfeed";
+import { HandlerAgg } from "./commands/aggregrate";
 import {
     CommandsRegistry,
-    handlerLogin,
-    register,
     registerCommand,
-    reset,
     runCommand,
-    users,
-} from "./commands";
+} from "./commands/commands";
+import { handlerGetFeed } from "./commands/getfeed";
+import { handlerReset } from "./commands/reset";
+import {
+    handlerListUsers,
+    handlerLogin,
+    handlerRegister,
+} from "./commands/users";
+
 async function main() {
     const commandsRegistry: CommandsRegistry = {};
 
     registerCommand(commandsRegistry, "login", handlerLogin);
-    registerCommand(commandsRegistry, "register", register);
-    registerCommand(commandsRegistry, "reset", reset);
-    registerCommand(commandsRegistry, "users", users);
+    registerCommand(commandsRegistry, "register", handlerRegister);
+    registerCommand(commandsRegistry, "reset", handlerReset);
+    registerCommand(commandsRegistry, "users", handlerListUsers);
+    registerCommand(commandsRegistry, "agg", HandlerAgg);
+    registerCommand(commandsRegistry, "addfeed", handlerAddFeed);
+    registerCommand(commandsRegistry, "feeds", handlerGetFeed);
 
     const args = process.argv.slice(2);
 
@@ -25,7 +34,16 @@ async function main() {
     const cmdName = args[0];
     const remains: string[] = args.slice(1);
 
-    await runCommand(commandsRegistry, cmdName, ...remains);
+    try {
+        await runCommand(commandsRegistry, cmdName, ...remains);
+    } catch (err) {
+        if (err instanceof Error) {
+            console.error(`Error running command ${cmdName}: ${err.message}`);
+        } else {
+            console.error(`Error running command ${cmdName}: ${err}`);
+        }
+        process.exit(1);
+    }
     process.exit(0);
 }
 

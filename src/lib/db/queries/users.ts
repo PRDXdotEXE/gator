@@ -13,8 +13,17 @@ export async function getUserByName(name: string) {
     return result;
 }
 
+export async function getUserById(id: string) {
+    const result = await db
+        .select({ name: users.name })
+        .from(users)
+        .where(eq(users.id, id));
+
+    return result;
+}
+
 export async function resetDb() {
-    return await db.execute(sql`TRUNCATE TABLE users`);
+    return await db.execute(sql`TRUNCATE TABLE users CASCADE`);
 }
 export async function getUsers() {
     return await db.select({ name: users.name }).from(users);
