@@ -1,6 +1,6 @@
 import { db } from "..";
 import { Feed, feedFollows, feeds, User, users } from "../schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getUserById, getUserByName } from "./users";
 import { readConfig } from "src/config";
 
@@ -48,35 +48,18 @@ export async function feedByURL(url: string) {
     return result;
 }
 
-export async function handlerFollow(
-    cmdName: string,
-    user: User,
-    ...args: string[]
-) {
-    try {
-        if (args.length !== 1) {
-            throw new Error(`usage: ${cmdName} <url>`);
-        }
+export async function FeedUnFollow(feed: Feed, user: User) {
+    const [deleted] = await db
+        .delete(feedFollows)
+        .where(
+            and(
+                eq(feedFollows.feedId, feed.id),
+                eq(feedFollows.userId, user.id),
+            ),
+        )
+        .returning();
 
-        const url = args[0];
-
-        const feed = await feedByURL(url);
-
-        if (!feed) {
-            console.error(`Error: Could not find a feed with URL: ${url}`);
-            return;
-        }
-
-        const result = await createFeedFollow(feed, user);
-
-        console.log(`userName:${user.name}`);
-
-        for (let i = 0; i < result.length; i++) {
-            console.log(`feedName:${result[i].feedName}`);
-        }
-    } catch (err) {
-        console.log("Try again");
-    }
+    return deleted;
 }
 export async function getFeedFollowsForUser(userName: string) {
     const user = await getUserByName(userName);
@@ -93,14 +76,4 @@ export async function getFeedFollowsForUser(userName: string) {
         .where(eq(feedFollows.userId, user.id));
 
     return result;
-}
-
-export async function handlerFollowing(_: string, user: User) {
-    const followingFeeds = await getFeedFollowsForUser(user.name);
-
-    console.log(`${user.name} follows:`);
-
-    for (let i = 0; i < followingFeeds.length; i++) {
-        console.log(`${followingFeeds[i].feedName}`);
-    }
 }
