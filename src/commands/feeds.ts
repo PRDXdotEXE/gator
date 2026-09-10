@@ -3,10 +3,14 @@ import {
     FeedUnFollow,
     getFeed,
     getFeedFollowsForUser,
-} from "src/lib/db/queries/feed";
-import { getUserById } from "src/lib/db/queries/users";
-import { Feed, User } from "src/lib/db/schema";
-import { createFeed, createFeedFollow } from "src/lib/db/queries/feed";
+    getNextFeedToFetch,
+    markFeedFetched,
+} from "../lib/db/queries/feed";
+import { getUserById } from "../lib/db/queries/users";
+import { Feed, User } from "../lib/db/schema";
+import { createFeed, createFeedFollow } from "../lib/db/queries/feed";
+import { fetchFeed } from "../rss";
+import { createPost } from "../lib/db/queries/posts";
 
 export async function handlerAddFeed(
     cmdName: string,
@@ -117,4 +121,43 @@ export async function handlerUnFollow(
     await FeedUnFollow(feed, user);
 
     console.log(`${user.name} unfollowed ${feed.name}`);
+}
+
+function parsePublishedAt(value?: string): Date | null {
+    if (!value) {
+        return null;
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    return date;
+}
+
+export async function scrapeFeeds() {
+    const feed = await getNextFeedToFetch();
+
+    if (!feed) {
+        console.log("No feeds found.");
+        return;
+    }
+
+    console.log(`Fetching feed: ${feed.name}`);
+
+    const rssFeed = await fetchFeed(feed.url);
+
+    await markFeedFetched(feed.id);
+
+    for (const item of rssFeed.channel.items) {
+        await createPost({
+            title: item.title,
+            url: item.link,
+            description: item.description ?? null,
+            publishedAt: parsePublishedAt(item.pubDate),
+            feedId: feed.id,
+        });
+    }
 }

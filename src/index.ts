@@ -4,7 +4,7 @@ import {
     handlerFollowing,
     handlerUnFollow,
 } from "./commands/feeds";
-import { HandlerAgg } from "./commands/aggregrate";
+import { handlerAgg } from "./commands/aggregrate";
 import {
     CommandsRegistry,
     registerCommand,
@@ -18,6 +18,7 @@ import {
     handlerRegister,
 } from "./commands/users";
 import { middlewareLoggedIn } from "./middleware";
+import { handlerBrowse } from "./commands/browse";
 
 async function main() {
     const commandsRegistry: CommandsRegistry = {};
@@ -26,7 +27,7 @@ async function main() {
     registerCommand(commandsRegistry, "register", handlerRegister);
     registerCommand(commandsRegistry, "reset", handlerReset);
     registerCommand(commandsRegistry, "users", handlerListUsers);
-    registerCommand(commandsRegistry, "agg", HandlerAgg);
+    registerCommand(commandsRegistry, "agg", handlerAgg);
     registerCommand(
         commandsRegistry,
         "unfollow",
@@ -52,6 +53,12 @@ async function main() {
         "following",
         middlewareLoggedIn(handlerFollowing),
     );
+    registerCommand(
+        commandsRegistry,
+        "browse",
+        middlewareLoggedIn(handlerBrowse),
+    );
+
     const args = process.argv.slice(2);
 
     if (args.length < 1) {
