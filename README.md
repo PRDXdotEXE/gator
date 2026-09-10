@@ -1,28 +1,36 @@
 # Gator
 
-Gator is a command-line RSS feed aggregator built with TypeScript, Node.js, PostgreSQL, and Drizzle ORM.
+A command-line RSS feed aggregator that lets users register accounts, subscribe to feeds, and continuously collect posts into a local PostgreSQL database.
 
-It allows users to register accounts, add RSS feeds, follow feeds, aggregate posts from those feeds, and browse the feeds they follow.
+## Features
+
+- User registration and login system
+- Add and follow RSS feeds
+- Continuous background aggregation of new posts
+- Browse posts from followed feeds
+- PostgreSQL-backed storage with Drizzle ORM migrations
 
 ## Tech Stack
 
-- TypeScript
-- Node.js
-- PostgreSQL
-- Drizzle ORM
-- fast-xml-parser
-- tsx
+| Layer          | Technology       |
+| -------------- | ---------------- |
+| Language       | TypeScript       |
+| Runtime        | Node.js          |
+| Database       | PostgreSQL       |
+| ORM            | Drizzle ORM      |
+| XML Parsing    | fast-xml-parser  |
+| Execution      | tsx              |
 
-## Requirements
+## Prerequisites
 
-Before running Gator, make sure you have:
+Make sure the following are installed before setting up Gator:
 
-- Node.js installed
-- npm installed
-- PostgreSQL installed and running
-- Git installed
+- [Node.js](https://nodejs.org/)
+- npm
+- [PostgreSQL](https://www.postgresql.org/)
+- Git
 
-You can verify your installations with:
+Verify your installations:
 
 ```bash
 node --version
@@ -33,44 +41,36 @@ git --version
 
 ## Installation
 
-Clone the repository:
+1. Clone the repository:
 
-```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
-cd YOUR_REPOSITORY
-```
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+   cd YOUR_REPOSITORY
+   ```
 
-Install the dependencies:
+2. Install dependencies:
 
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
 ## Database Setup
 
-Gator uses PostgreSQL to store users, feeds, feed follows, and posts.
+1. Create a PostgreSQL database:
 
-Create a PostgreSQL database:
+   ```bash
+   createdb gator
+   ```
 
-```bash
-createdb gator
-```
+2. Ensure PostgreSQL is running, then apply migrations:
 
-Make sure PostgreSQL is running before starting Gator.
-
-Run the database migrations:
-
-```bash
-npm run migrate
-```
+   ```bash
+   npm run migrate
+   ```
 
 ## Configuration
 
-Gator expects a configuration file at:
-
-```text
-~/.gatorconfig.json
-```
+Gator reads its configuration from `~/.gatorconfig.json`.
 
 Create the file:
 
@@ -78,153 +78,41 @@ Create the file:
 nano ~/.gatorconfig.json
 ```
 
-Add:
+Add the following, replacing the placeholders with your PostgreSQL credentials:
 
 ```json
 {
-    "db_url": "postgres://YOUR_USERNAME:YOUR_PASSWORD@localhost:5432/gator"
+  "db_url": "postgres://YOUR_USERNAME:YOUR_PASSWORD@localhost:5432/gator"
 }
 ```
 
-Replace `YOUR_USERNAME` and `YOUR_PASSWORD` with your PostgreSQL credentials.
+> **Note:** This file is updated automatically with the currently logged-in user whenever you run `register` or `login`.
 
-Gator will automatically update the configuration with the currently logged-in user when you use the `register` or `login` commands.
+## Usage
 
-## Running Gator
-
-The CLI is run through npm:
+All commands are run through npm:
 
 ```bash
 npm run start <command>
 ```
 
-For example:
+### Commands
 
-```bash
-npm run start register kahya
-```
+| Command                                   | Description                                      |
+| ------------------------------------------ | ------------------------------------------------- |
+| `register <username>`                     | Create a new user                                 |
+| `login <username>`                        | Switch to an existing user                        |
+| `users`                                   | List all registered users                         |
+| `addfeed "<name>" "<url>"`                | Add and automatically follow a new RSS feed       |
+| `feeds`                                   | List all available feeds                          |
+| `follow "<feed-url>"`                     | Follow an existing feed                           |
+| `unfollow "<feed-url>"`                   | Stop following a feed                             |
+| `following`                               | List feeds followed by the current user           |
+| `agg <time-between-requests>`             | Continuously fetch posts from followed feeds      |
 
-## Available Commands
+Stop the aggregator at any time with `Ctrl+C`.
 
-### Register a User
-
-Create a new user:
-
-```bash
-npm run start register <username>
-```
-
-Example:
-
-```bash
-npm run start register kahya
-```
-
-### Login
-
-Switch to an existing user:
-
-```bash
-npm run start login <username>
-```
-
-Example:
-
-```bash
-npm run start login kahya
-```
-
-### List Users
-
-Display registered users:
-
-```bash
-npm run start users
-```
-
-### Add a Feed
-
-Add an RSS feed:
-
-```bash
-npm run start addfeed "<feed-name>" "<feed-url>"
-```
-
-Example:
-
-```bash
-npm run start addfeed "Hacker News RSS" "https://hnrss.org/newest"
-```
-
-Adding a feed also follows that feed for the currently logged-in user.
-
-### List Feeds
-
-Display available feeds:
-
-```bash
-npm run start feeds
-```
-
-### Follow a Feed
-
-Follow an existing feed using its URL:
-
-```bash
-npm run start follow "<feed-url>"
-```
-
-Example:
-
-```bash
-npm run start follow "https://www.wagslane.dev/index.xml"
-```
-
-### List Followed Feeds
-
-Display the feeds followed by the current user:
-
-```bash
-npm run start following
-```
-
-### Unfollow a Feed
-
-Stop following a feed:
-
-```bash
-npm run start unfollow "<feed-url>"
-```
-
-### Aggregate Feeds
-
-Fetch posts from RSS feeds:
-
-```bash
-npm run start agg <time-between-requests>
-```
-
-Example:
-
-```bash
-npm run start agg 1m
-```
-
-The aggregator continuously fetches feeds and stores their posts in the database.
-
-You can stop the aggregator with:
-
-```text
-Ctrl+C
-```
-
-### Browse Posts
-
-Use the feed/post commands implemented by the project to view stored posts.
-
-## Example Workflow
-
-A typical first-time workflow looks like this:
+### Example Workflow
 
 ```bash
 npm install
@@ -241,19 +129,19 @@ npm run start following
 npm run start agg 1m
 ```
 
-The aggregator will periodically fetch the configured RSS feeds and store new posts in PostgreSQL.
+This registers a user, subscribes to a feed, and starts the aggregator, which will periodically fetch new posts and store them in PostgreSQL.
 
 ## Project Structure
 
 ```text
 Gator/
 ├── src/
-│   ├── commands/
-│   ├── db/
-│   ├── lib/
-│   ├── config.ts
-│   ├── index.ts
-│   └── rss.ts
+│   ├── commands/     # CLI command implementations
+│   ├── db/           # Database schema and queries
+│   ├── lib/          # Shared utilities
+│   ├── config.ts     # Configuration loading/saving
+│   ├── index.ts      # CLI entry point
+│   └── rss.ts        # RSS fetching and parsing
 ├── drizzle.config.ts
 ├── package.json
 ├── tsconfig.json
@@ -262,13 +150,13 @@ Gator/
 
 ## Development
 
-Run the project with:
+Run a command locally:
 
 ```bash
 npm run start <command>
 ```
 
-Generate database migrations when the schema changes:
+Generate migrations after changing the schema:
 
 ```bash
 npm run generate
@@ -278,14 +166,4 @@ Apply migrations:
 
 ```bash
 npm run migrate
-```
-
-## GitHub
-
-After committing your changes, push the repository to GitHub:
-
-```bash
-git add README.md
-git commit -m "Add project documentation"
-git push
 ```
