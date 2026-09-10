@@ -241,6 +241,13 @@ Browse the posts collected by Gator:
 ```bash
 npm run start browse
 ```
+### Reset Database
+
+Reset the database and remove all existing data:
+
+```bash
+npm run start reset
+```
 
 ## Example Workflow
 
