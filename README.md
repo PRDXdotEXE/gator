@@ -289,9 +289,3 @@ git add README.md
 git commit -m "Add project documentation"
 git push
 ```
-
-Your public repository URL should look like:
-
-```text
-https://github.com/YOUR_USERNAME/YOUR_REPOSITORY
-```
